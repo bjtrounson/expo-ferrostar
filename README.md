@@ -8,6 +8,7 @@ This library is still in development and is not ready for production use.
 - [x] Ferrostar View Android Implementation
 - [ ] Ferrostar Core iOS Implementation
 - [ ] Ferrostar View iOS Implementation
+- [ ] Documentation
 
 This is a library for using [Ferrostar](https://github.com/stadiamaps/ferrostar) navigation library for [Expo](https://expo.dev/).
 
