@@ -27,19 +27,24 @@ import expo.modules.ferrostar.records.VisualInstruction
 import expo.modules.ferrostar.records.VisualInstructionContent
 import expo.modules.ferrostar.records.Waypoint
 import expo.modules.ferrostar.records.WaypointKind
+import expo.modules.core.interfaces.LifecycleEventListener
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.views.ExpoView
 import okhttp3.OkHttpClient
 import java.time.Duration
 
 @SuppressLint("ViewConstructor")
-class ExpoFerrostarView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
+class ExpoFerrostarView(context: Context, appContext: AppContext) : ExpoView(context, appContext), LifecycleEventListener {
   private val httpClient = OkHttpClient
     .Builder()
     .callTimeout(Duration.ofSeconds(15))
     .build()
   private lateinit var core: FerrostarCore
   private lateinit var viewModel: DefaultNavigationViewModel
+
+  private val onNavigationStateChange by EventDispatcher()
+
+  private val mainScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
   private var coreOptions: FerrostarCoreOptions = FerrostarCoreOptions()
   private var navigationOptions: FerrostarNavigationOptions = FerrostarNavigationOptions()
@@ -264,6 +269,11 @@ class ExpoFerrostarView(context: Context, appContext: AppContext) : ExpoView(con
     return localRoutes
   }
 
+  private fun destroy() {
+    Log.d("ExpoFerrostarNavigationView", "Destroying")
+    mainScope.cancel()
+  }
+
   private fun updateCore() {
     Log.d("ExpoFerrostarNavigationView", "Updating core")
     var locationProvider: LocationProvider = AndroidSystemLocationProvider(context)
@@ -291,6 +301,18 @@ class ExpoFerrostarView(context: Context, appContext: AppContext) : ExpoView(con
   private fun updateViewModel() {
     Log.d("ExpoFerrostarNavigationView", "Updating view model")
     viewModel = DefaultNavigationViewModel(core)
+
+    mainScope.launch {
+      viewModel.uiState.collect { uiState ->
+        onNavigationStateChange(
+          mapOf(
+            "isNavigating" to uiState.isNavigating(),
+            "isCalculatingNewRoute" to if (uiState.isCalculatingNewRoute != null) uiState.isCalculatingNewRoute!! else false,
+          )
+        )
+      }
+    }
+
     updateView()
   }
 
@@ -302,5 +324,17 @@ class ExpoFerrostarView(context: Context, appContext: AppContext) : ExpoView(con
     }
 
     Log.d("ExpoFerrostarNavigationView", "BAZINGA!")
+  }
+
+  override fun onHostResume() {
+    TODO("Not yet implemented")
+  }
+
+  override fun onHostPause() {
+    TODO("Not yet implemented")
+  }
+
+  override fun onHostDestroy() {
+    destroy()
   }
 }

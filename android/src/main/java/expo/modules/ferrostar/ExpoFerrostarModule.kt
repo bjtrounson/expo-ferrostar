@@ -9,6 +9,10 @@ class ExpoFerrostarModule : Module() {
     Name("ExpoFerrostar")
 
     View(ExpoFerrostarView::class) {
+      Events(
+        "onNavigationStateChange"
+      )
+
       AsyncFunction("getRoutes") Coroutine { view: ExpoFerrostarView, initialLocation: UserLocation, waypoints: List<Waypoint> ->
         return@Coroutine view.getRoutes(initialLocation, waypoints)
       }

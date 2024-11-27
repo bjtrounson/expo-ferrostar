@@ -1,3 +1,5 @@
+import { NativeSyntheticEvent } from "react-native";
+
 export type GeographicCoordinate = {
   lat: number;
   lng: number;
@@ -145,4 +147,11 @@ export type ExpoFerrostarModule = {
     initialLocation: UserLocation,
     waypoints: Waypoint[]
   ) => Promise<Route[]>;
+};
+
+export type NavigationStateChangeEvent = NativeSyntheticEvent<NavigationState>;
+
+export type NavigationState = {
+  isNavigating: boolean;
+  isCalculatingNewRoute: boolean;
 };
