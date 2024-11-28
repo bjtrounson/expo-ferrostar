@@ -1,5 +1,11 @@
 import { requireNativeViewManager } from "expo-modules-core";
-import React, { forwardRef, useImperativeHandle, useRef } from "react";
+import React, {
+  forwardRef,
+  useContext,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+} from "react";
 import {
   ExpoFerrostarModule,
   NativeViewProps,
@@ -11,6 +17,7 @@ import {
   NavigationStateChangeEvent,
 } from "./ExpoFerrostar.types";
 import { StyleProp, ViewStyle } from "react-native";
+import { FerrostarContext } from "./FerrostarProvider";
 
 const NativeView: React.ComponentType<
   NativeViewProps & {
@@ -28,6 +35,37 @@ export const FerrostarNativeComponent = forwardRef<
   }
 >((props, ref) => {
   const innerRef = useRef<ExpoFerrostarModule>(null);
+
+  const { refs } = useContext(FerrostarContext);
+
+  useLayoutEffect(() => {
+    if (!innerRef.current) return;
+
+    if (props.id === "current") {
+      throw new Error("'current' cannot be used as ferrostar id");
+    }
+
+    if (props.id && refs[props.id]) {
+      throw new Error(
+        `Multiple ferrostar instances withe the same id: ${props.id}`
+      );
+    }
+
+    if (props.id) {
+      refs[props.id] = innerRef.current;
+    }
+
+    refs["current"] = innerRef.current;
+
+    return () => {
+      if (props.id) {
+        refs[props.id] = undefined;
+      }
+      if (refs["current"] === innerRef.current) {
+        refs["current"] = undefined;
+      }
+    };
+  }, [props.id, refs, innerRef.current]);
 
   useImperativeHandle(ref, () => ({
     startNavigation: (route: Route, options?: NavigationControllerConfig) => {

@@ -136,7 +136,8 @@ export type NativeViewProps = {
   coreOptions?: CoreOptions;
 };
 
-export type FerrostarViewProps = NavigationOptions & CoreOptions;
+export type FerrostarViewProps = { id?: string } & NavigationOptions &
+  CoreOptions;
 
 export type ExpoFerrostarModule = {
   startNavigation: (route: Route, options?: NavigationControllerConfig) => void;
